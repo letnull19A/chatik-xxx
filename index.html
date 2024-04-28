@@ -1,58 +1,81 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Socket.IO chat</title>
-  <style>
-      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Socket.IO chat</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn-uicons.flaticon.com/2.3.0/uicons-solid-rounded/css/uicons-solid-rounded.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/main.css" />
+  </head>
+  <body>
+    <div class="chat">
+      <div class="chat__header">
+        <div class="chat__icon"><img src="/public/logo.svg" /></div>
+        <div class="chat__title">Всепомойки</div>
+        <div class="chat__location">
+          <i class="fi fi-sr-marker"></i>Димитровград
+        </div>
+      </div>
+      <div class="chat__navigator">
+        <button>
+          <i class="fi fi-sr-angle-double-left"></i>Обратно в меню
+        </button>
+      </div>
+      <ul class="chat__message" id="chat__message"></ul>
+      <form class="chat__form" id="form" action="">
+        <input
+          placeholder="Введите запрос..."
+          class="chat__input-field"
+          id="input"
+          autocomplete="off"
+        />
+        <button disabled id="button" class="chat__button-send">
+          <img src="/public/send_button.svg" />
+        </button>
+      </form>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
 
-      #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
-      #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
-      #input:focus { outline: none; }
-      #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+      const form = document.getElementById("form");
+      const input = document.getElementById("input");
+      const messages = document.getElementById("chat__message");
+      const button = document.getElementById("button");
 
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages > li { padding: 0.5rem 1rem; }
-      #messages > li:nth-child(odd) { background: #efefef; }
-  </style>
-</head>
-<body>
-  <ul id="messages"></ul>
-  <form id="form" action="">
-    <input id="input" autocomplete="off" /><button>Send</button>
-  </form>
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    let counter = 0;
+      input.addEventListener("input", (event) => {
+        button.disabled = event.target.value === "";
+      });
 
-    const socket = io({
-      auth: {
-        serverOffset: 0
-      },
-      ackTimeout: 10000,
-      retries: 3,
-    });
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
 
-    const form = document.getElementById('form');
-    const input = document.getElementById('input');
-    const messages = document.getElementById('messages');
+        if (input.value) {
+          socket.emit("chat message", { owner: "USER", message: input.value });
+          input.value = "";
+          button.disabled = true;
+        }
+      });
 
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      if (input.value) {
-        const clientOffset = `${socket.id}-${counter++}`;
-        socket.emit('chat message', input.value, clientOffset);
-        input.value = '';
-      }
-    });
-
-    socket.on('chat message', (msg, serverOffset) => {
-      const item = document.createElement('li');
-      item.textContent = msg;
-      messages.appendChild(item);
-      window.scrollTo(0, document.body.scrollHeight);
-      socket.auth.serverOffset = serverOffset;
-    });
-  </script>
-</body>
+      socket.on("chat message", (msg) => {
+        const item = document.createElement("li");
+        item.textContent = msg.message;
+        item.classList.add(
+          msg.owner === "USER"
+            ? "chat__message-item_user"
+            : "chat__message-item_bot"
+        );
+        messages.appendChild(item);
+        messages.scrollTo(0, messages.scrollHeight);
+      });
+    </script>
+  </body>
 </html>
