@@ -98,6 +98,9 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin-bottom: 30px;
 }
 
 .chat__message-item_user,

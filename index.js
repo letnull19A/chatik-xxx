@@ -27,14 +27,35 @@ io.on("connection", async (socket) => {
   socket.on("chat message", async (msg) => {
     io.emit("chat message", msg);
 
+    const readyDataMessage = {
+      owner: "BOT",
+      message: "Запрос не корректен"
+    };
+
+    const message = msg.message;
+
     setTimeout(() => {
-      if (msg.message === "ping") {
-        io.emit("chat message", { owner: "BOT", message: "pong" });
+      if (message === "ping") {
+        readyDataMessage.message = "pong";
       }
 
-      if (msg.message === "Привет") {
-        io.emit("chat message", { owner: "BOT", message: "Приветствую! Чем могу помочь?" });
+      if (message === "Привет") {
+        readyDataMessage.message = "Приветствую! Чем могу помочь?";
       }
+      
+      if (message.includes('Хочу найти место')) {
+        readyDataMessage.message = "Этот диалог работает";
+      }
+
+      if (message.includes('Случайное место')) {
+        readyDataMessage.message = "Этот диалог работает";
+      }
+
+      if (message.includes('История запросов')) {
+        readyDataMessage.message = "Этот диалог работает";
+      }
+      
+      io.emit("chat message", readyDataMessage);
     }, 1000);
   });
 });
